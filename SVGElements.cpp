@@ -55,9 +55,9 @@ namespace svg
     //! we can create a temporary vector of points to store the start and end points
     //! after that we make the draw fucntion, which will have as arguments the start and end point and the fill
 
-    line::line(const Color &fill,
-               const Point &start,
-               const Point &end)
+    line::line(const Point &start,
+               const Point &end,
+               const Color &fill)
                :polyline(fill,std::vector<Point> {start,end}){}
 
     void line::draw(PNGImage &img) const{
@@ -78,7 +78,7 @@ namespace svg
 
     //!rectangle
 
-    rect::rect(const Point &upper_left_corner, 
+    rect::rect(const Color &fill, const Point &upper_left_corner, 
                const int &width, 
                const int &height)
                :polygon(fill, std::vector<Point>{
