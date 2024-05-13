@@ -90,4 +90,43 @@ namespace svg
     void rect::draw(PNGImage &img) const{
         img.draw_polygon(points,fill);
     }
+
+
+
+    Group::Group(const std::vector<SVGElement*> &elements, const std::string &id)
+        : SVGElement(Color{0,0,0}, id), elements(elements)
+    {
+    }
+
+    void Group::draw(PNGImage &img) const{
+        for(const SVGElement *element: elements){
+            element->draw(img);
+        }
+    }
+
+    void Group::translate(const Point &dir) {
+        for(const SVGElement *element: elements){
+            element->translate(dir);
+        }
+    }
+
+    void Group::rotate(const Point &origin, int degrees) {
+        for(const SVGElement *element: elements){
+            element->rotate(origin, degrees);
+        }
+    }
+    void Group::scale(const Point &origin, int factor) {
+        for(const SVGElement *element: elements){
+            element->scale(origin , factor);
+        }
+    }
+
+
+
+
+
+
+
+
+
 }
