@@ -116,5 +116,14 @@ namespace svg
             int height;
     };
 
+
+    class Group : public SVGElement{
+    public:
+        Group(const std::vector<SVGElement *>&elements= ());
+        void draw(PNGImage &img) const override;
+        void translate(const Point &dir) override;
+        void rotate(const Point &origin, int degrees) override;
+        void scale(const Point &origin, int factor) override
+
 };
 #endif
