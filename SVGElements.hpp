@@ -101,7 +101,7 @@ namespace svg
 
     class rect : public polygon{
         public:
-            rect(const Point &upper_left_corner, const int &width, const int &height) :
+            rect(const Color &fill,const Point &upper_left_corner, const int &width, const int &height) :
                                     polygon(fill, std::vector<Point> {upper_left_corner, Point(upper_left_corner.x + width, upper_left_corner.y),
                                                                          Point(upper_left_corner.x + width, upper_left_corner.y + height),
                                                                          Point(upper_left_corner.x, upper_left_corner.y + height)}),
