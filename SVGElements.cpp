@@ -94,7 +94,7 @@ namespace svg
     }
 
     Group::Group(const std::vector<SVGElement*> &elements, const std::string &id)
-        : SVGElement(Color{0,0,0}, id), elements(elements)
+        : elements(elements),id(id)
     {
     }
 
