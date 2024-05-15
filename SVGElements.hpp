@@ -9,6 +9,9 @@
 
 namespace svg
 {
+
+    //! we implemented the translate, rotate and scale functions
+
     class SVGElement
     {
 
@@ -16,6 +19,13 @@ namespace svg
         SVGElement();
         virtual ~SVGElement();
         virtual void draw(PNGImage &img) const = 0;
+        virtual void translate(float dx, float dy) = 0; //! the direction it will move
+        virtual void rotate(float angle, const Point &center) = 0;
+        virtual void scale(float sx, float sy) = 0; //! sx and sy represent the scale factors in both x and y
+    
+    protected:
+        Color fill_;
+        std::string id_;
     };
 
     // Declaration of namespace functions
@@ -59,6 +69,7 @@ namespace svg
     class polyline : public SVGElement{
         public:
             polyline (const Color &fill, const std::vector<Point> &points) {}
+            
             void draw(PNGImage &img) const override {}
         protected:
             Color fill;
@@ -68,15 +79,14 @@ namespace svg
     class line : public polyline{
         public:
         line(const Point &start, const Point &end, const Color &fill) : 
-                                            polyline(fill, std::vector<Point> {start,end}), start(start), end(end), fill(fill){}
+                                            polyline(fill, std::vector<Point> {start,end}), start(start), end(end){}
         void draw(PNGImage &img) const override {}//!we again override the draw function
 
 
         protected:
-            Color fill;//!the stroke
             Point start;//!the starting point with x1 and y1
             Point end;//!the end point with x2 and y2
-
+            Color fill; //!the stroke
     };
 
     //! polygon class a subclass of SVGElement
@@ -103,12 +113,13 @@ namespace svg
         public:
             rect(const Color &fill,const Point &upper_left_corner, const int &width, const int &height) :
                                     polygon(fill, std::vector<Point> {upper_left_corner, {upper_left_corner.x + width, upper_left_corner.y},
-                                                                        {upper_left_corner.x + width, upper_left_corner.y + height},
-                                                                        {upper_left_corner.x, upper_left_corner.y + height}}),
+                                                                         {upper_left_corner.x + width, upper_left_corner.y + height},
+                                                                         {upper_left_corner.x, upper_left_corner.y + height}}),
                                                                          upper_left_corner(upper_left_corner),
                                                                          width(width),
                                                                          height(height) {}
             void draw(PNGImage &img) const override{}
+
         protected:
 
             Point upper_left_corner;
@@ -119,11 +130,15 @@ namespace svg
 
     class Group : public SVGElement{
     public:
-        Group(const std::vector<SVGElement *>&elements= ());
+        Group(const std::vector<SVGElement *>&elements,const std::string &id);
         void draw(PNGImage &img) const override;
-        void translate(const Point &dir) override;
-        void rotate(const Point &origin, int degrees) override;
-        void scale(const Point &origin, int factor) override
+        void translate(const Point &dir);
+        void rotate(const Point &origin, int degrees);
+        void scale(const Point &origin, int factor);
 
+    protected:
+        const std::vector<SVGElement *> &elements;
+        const std::string &id_;
+    };
 };
 #endif
