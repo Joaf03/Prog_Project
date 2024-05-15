@@ -130,15 +130,15 @@ namespace svg
 
     class Group : public SVGElement{
     public:
-        Group(const std::vector<SVGElement *>&elements,const std::string &id);
+        Group(const std::vector<SVGElement *>&elements={},const std::string &id);
         void draw(PNGImage &img) const override;
-        void translate(const Point &dir);
-        void rotate(const Point &origin, int degrees);
-        void scale(const Point &origin, int factor);
+        void translate(const Point &dir) override;
+        void rotate(const Point &origin, int degrees) override;
+        void scale(const Point &origin, int factor) override;
 
     protected:
-        const std::vector<SVGElement *> &elements;
-        const std::string &id_;
+        std::vector<SVGElement *> &elements;
+        std::string &id_;
     };
 };
 #endif
