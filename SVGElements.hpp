@@ -9,7 +9,8 @@
 
 namespace svg
 {
-
+    //! since we are dealing with pixels, the values of all transformations will be integers and not float types, since we cannot
+    //! move pixels by a decimal value
     //! we implemented the translate, rotate and scale functions
 
     class SVGElement
@@ -19,18 +20,11 @@ namespace svg
         SVGElement();
         virtual ~SVGElement();
         virtual void draw(PNGImage &img) const = 0;
-        virtual void translate(float dx, float dy) = 0; //! the direction it will move
-        virtual void rotate(float angle, const Point &center) = 0;
-        virtual void scale(float sx, float sy) = 0; //! sx and sy represent the scale factors in both x and y
-    
-    protected:
-        Color fill_;
-        std::string id_;
+        virtual void translate(const Point &dir) = 0; //! the direction it will move
+        virtual void rotate(const Point &center, int angle) = 0; //!the center of rotation and the angle of rotation
+        virtual void scale(const Point &center, int factor) = 0; //! sx and sy represent the scale factors in both x and y
     };
 
-    // Declaration of namespace functions
-    // readSVG -> implement it in readSVG.cpp
-    // convert -> already given (DO NOT CHANGE) in convert.cpp
 
     void readSVG(const std::string &svg_file,
                  Point &dimensions,
@@ -43,6 +37,9 @@ namespace svg
     public:
         Ellipse(const Color &fill, const Point &center, const Point &radius);
         void draw(PNGImage &img) const override;
+        void translate(const Point &dir);
+        void rotate(const Point &origin, int degrees);
+        void scale(const Point &origin, int factor);
 
     protected://change from private to protected since we are likely to use these attributes again
         Color fill;
@@ -54,9 +51,11 @@ namespace svg
 //!we can view circle as a specific case of an ellipse, which has only one radius, not two unlike the ellipse
     class Circle : public Ellipse{
     public:
-        Circle (const Color &fill, const Point &center, const Point &radius) 
-            : Ellipse(fill,center,radius){}//!circle will share fill, center, and radius with the ellipse
-        void draw(PNGImage &img) const override{}
+        Circle (const Color &fill, const Point &center, const Point &radius);//!circle will share fill, center, and radius with the ellipse
+        void draw(PNGImage &img) const override;
+        void translate(const Point &dir);
+        void rotate(const Point &origin, int degrees);
+        void scale(const Point &origin, int factor);
 
 //!in this case is not necessary to declare fill, radius and center again since ellipse is the "super class" and
 //!circle will natively keep those variables, so there is no need to declare them again
@@ -68,9 +67,11 @@ namespace svg
     //!to store those points like: vector<Point> &points, a vector of type Point, which contains a number of points
     class polyline : public SVGElement{
         public:
-            polyline (const Color &fill, const std::vector<Point> &points) {}
-            
-            void draw(PNGImage &img) const override {}
+            polyline (const Color &fill, const std::vector<Point> &points);
+            void draw(PNGImage &img) const override;
+            void translate(const Point &dir);
+            void rotate(const Point &origin, int degrees);
+            void scale(const Point &origin, int factor);
         protected:
             Color fill;
             std::vector<Point> points;//!we declare the vector of points of type Point
@@ -78,9 +79,11 @@ namespace svg
 
     class line : public polyline{
         public:
-        line(const Point &start, const Point &end, const Color &fill) : 
-                                            polyline(fill, std::vector<Point> {start,end}), start(start), end(end){}
-        void draw(PNGImage &img) const override {}//!we again override the draw function
+            line(const Point &start, const Point &end, const Color &fill);
+            void draw(PNGImage &img) const override;//!we again override the draw function
+            void translate(const Point &dir);
+            void rotate(const Point &origin, int degrees);
+            void scale(const Point &origin, int factor);
 
 
         protected:
@@ -94,9 +97,11 @@ namespace svg
     //! and will also have a stroke color, the fill parameter
     class polygon : public SVGElement{
         public:
-            polygon(const Color &fill, const std::vector<Point> &points) :
-                                        fill(fill), points(points){}
-            void draw(PNGImage &img) const override{}
+            polygon(const Color &fill, const std::vector<Point> &points);
+            void draw(PNGImage &img) const override;
+            void translate(const Point &dir);
+            void rotate(const Point &origin, int degrees);
+            void scale(const Point &origin, int factor);
         protected:
             Color fill;
             std::vector<Point> points;
@@ -111,14 +116,11 @@ namespace svg
 
     class rect : public polygon{
         public:
-            rect(const Color &fill,const Point &upper_left_corner, const int &width, const int &height) :
-                                    polygon(fill, std::vector<Point> {upper_left_corner, {upper_left_corner.x + width, upper_left_corner.y},
-                                                                         {upper_left_corner.x + width, upper_left_corner.y + height},
-                                                                         {upper_left_corner.x, upper_left_corner.y + height}}),
-                                                                         upper_left_corner(upper_left_corner),
-                                                                         width(width),
-                                                                         height(height) {}
-            void draw(PNGImage &img) const override{}
+            rect(const Color &fill,const Point &upper_left_corner, const int &width, const int &height);
+            void draw(PNGImage &img) const override;
+            void translate(const Point &dir);
+            void rotate(const Point &origin, int degrees);
+            void scale(const Point &origin, int factor);
 
         protected:
 
@@ -127,18 +129,23 @@ namespace svg
             int height;
     };
 
+    //!now we do the group class
+    //!this will have a vector os elements and a string id
+    //!the draw function which draws in the png file
+    //!then the translate, rotate and scale functions, which are similar to the functions
+    //!in the SVGElement class, Group is a subclass of SVGElement
 
     class Group : public SVGElement{
     public:
-        Group(const std::vector<SVGElement *>&elements={},const std::string &id);
+        Group(const std::vector<SVGElement *>&elements,const std::string &id);
         void draw(PNGImage &img) const override;
-        void translate(const Point &dir);
-        void rotate(const Point &origin, int degrees);
-        void scale(const Point &origin, int factor);
+        void translate(const Point &dir); //! the direction of the translation, which will be of type point, an x and y value
+        void rotate(const Point &origin, int degrees); //!the origin of rotation and the degrees of rotation
+        void scale(const Point &origin, int factor); //!the origin of the scale and the factor which will be s int value
 
     protected:
-        std::vector<SVGElement *> &elements;
-        std::string &id_;
+        const std::vector<SVGElement *> &elements;
+        const std::string &id;
     };
 };
 #endif
