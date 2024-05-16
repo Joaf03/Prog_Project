@@ -105,18 +105,18 @@ namespace svg
     }
 
     void Group::translate(const Point &dir) {
-        for(const SVGElement *element: elements){
+        for(SVGElement *element: elements){
             element->translate(dir.x, dir.y);
         }
     }
 
     void Group::rotate(const Point &origin, int degrees) {
-        for(const SVGElement *element: elements){
+        for(SVGElement *element: elements){
             element->rotate(degrees,origin);
         }
     }
     void Group::scale(const Point &origin, int factor) {
-        for(const SVGElement *element: elements){
+        for(SVGElement *element: elements){
             element->scale(origin, factor);
         }
     }
