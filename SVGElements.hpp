@@ -23,6 +23,12 @@ namespace svg
         virtual void translate(const Point &dir) = 0; //! the direction it will move
         virtual void rotate(const Point &center, int angle) = 0; //!the center of rotation and the angle of rotation
         virtual void scale(const Point &center, int factor) = 0; //! sx and sy represent the scale factors in both x and y
+        const std::string &getId() const {return id_;}
+        virtual std::string getType() const = 0;
+
+    protected:
+        Color fill_;
+        std::string id_;
     };
 
 
@@ -37,9 +43,10 @@ namespace svg
     public:
         Ellipse(const Color &fill, const Point &center, const Point &radius);
         void draw(PNGImage &img) const override;
-        void translate(const Point &dir);
-        void rotate(const Point &origin, int degrees);
-        void scale(const Point &origin, int factor);
+        void translate(const Point &dir) override;
+        void rotate(const Point &origin, int degrees) override;
+        void scale(const Point &origin, int factor) override;
+        std::string getType() const override {return "Ellipse";}
 
     protected://change from private to protected since we are likely to use these attributes again
         Color fill;
@@ -53,15 +60,16 @@ namespace svg
     public:
         Circle (const Color &fill, const Point &center, const Point &radius);//!circle will share fill, center, and radius with the ellipse
         void draw(PNGImage &img) const override;
-        void translate(const Point &dir);
-        void rotate(const Point &origin, int degrees);
-        void scale(const Point &origin, int factor);
+        void translate(const Point &dir) override;
+        void rotate(const Point &origin, int degrees) override;
+        void scale(const Point &origin, int factor) override;
+        std::string getType() const override {return "Circle";}
 
 //!in this case is not necessary to declare fill, radius and center again since ellipse is the "super class" and
 //!circle will natively keep those variables, so there is no need to declare them again
 //!also something to note, the variables x and y are used in struct Point, therefore we use for example
 //!Point &radius to show the radius of the circle
-    };
+};
 
     //!in this case we know that polyline consists of a sequence of points, therefore we can use a vector
     //!to store those points like: vector<Point> &points, a vector of type Point, which contains a number of points
@@ -69,9 +77,10 @@ namespace svg
         public:
             polyline (const Color &fill, const std::vector<Point> &points);
             void draw(PNGImage &img) const override;
-            void translate(const Point &dir);
-            void rotate(const Point &origin, int degrees);
-            void scale(const Point &origin, int factor);
+            void translate(const Point &dir) override;
+            void rotate(const Point &origin, int degrees) override;
+            void scale(const Point &origin, int factor) override;
+            std::string getType() const override {return "polyline";}
         protected:
             Color fill;
             std::vector<Point> points;//!we declare the vector of points of type Point
@@ -81,11 +90,10 @@ namespace svg
         public:
             line(const Point &start, const Point &end, const Color &fill);
             void draw(PNGImage &img) const override;//!we again override the draw function
-            void translate(const Point &dir);
-            void rotate(const Point &origin, int degrees);
-            void scale(const Point &origin, int factor);
-
-
+            void translate(const Point &dir) override;
+            void rotate(const Point &origin, int degrees) override;
+            void scale(const Point &origin, int factor) override;
+            std::string getType() const override {return "line";}
         protected:
             Point start;//!the starting point with x1 and y1
             Point end;//!the end point with x2 and y2
@@ -99,9 +107,10 @@ namespace svg
         public:
             polygon(const Color &fill, const std::vector<Point> &points);
             void draw(PNGImage &img) const override;
-            void translate(const Point &dir);
-            void rotate(const Point &origin, int degrees);
-            void scale(const Point &origin, int factor);
+            void translate(const Point &dir) override;
+            void rotate(const Point &origin, int degrees) override;
+            void scale(const Point &origin, int factor) override;
+            std::string getType() const override {return "polygon";}
         protected:
             Color fill;
             std::vector<Point> points;
@@ -118,9 +127,10 @@ namespace svg
         public:
             rect(const Color &fill,const Point &upper_left_corner, const int &width, const int &height);
             void draw(PNGImage &img) const override;
-            void translate(const Point &dir);
-            void rotate(const Point &origin, int degrees);
-            void scale(const Point &origin, int factor);
+            void translate(const Point &dir) override;
+            void rotate(const Point &origin, int degrees) override;
+            void scale(const Point &origin, int factor) override;
+            std::string getType() const override {return "rect";}
 
         protected:
 
@@ -139,13 +149,14 @@ namespace svg
     public:
         Group(const std::vector<SVGElement *>&elements,const std::string &id);
         void draw(PNGImage &img) const override;
-        void translate(const Point &dir); //! the direction of the translation, which will be of type point, an x and y value
-        void rotate(const Point &origin, int degrees); //!the origin of rotation and the degrees of rotation
-        void scale(const Point &origin, int factor); //!the origin of the scale and the factor which will be s int value
-
+        void translate(const Point &dir) override; //! the direction of the translation, which will be of type point, an x and y value
+        void rotate(const Point &origin, int degrees) override; //!the origin of rotation and the degrees of rotation
+        void scale(const Point &origin, int factor) override; //!the origin of the scale and the factor which will be s int value
+        std::string getType() const override {return "Group";}
     protected:
         const std::vector<SVGElement *> &elements;
-        const std::string &id;
+        const std::string &id_;
     };
 };
 #endif
+
