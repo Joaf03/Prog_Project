@@ -1,5 +1,6 @@
 #include "SVGElements.hpp"
 #include <vector>//! included vector
+#include <cmath>
 
 namespace svg
 {
@@ -35,8 +36,23 @@ namespace svg
         center.y += dir.y; //the center will move
     }
     void Ellipse::rotate(const Point &origin, int degrees) {
-         
+        //Translate to the origin, rotate, then translate back
+        float radianAngle = degrees * 3.1415926 / 180.0; // Convert degrees to radians
+        float cosTheta = cos(radianAngle);
+        float sinTheta = sin(radianAngle);
+        
+        // Translate center of ellipse to origin
+        Point translatedCenter = {this->center.x - origin.x, this->center.y - origin.y};
+
+        // Perform rotation
+        float rotatedX = translatedCenter.x * cosTheta - translatedCenter.y * sinTheta;
+        float rotatedY = translatedCenter.x * sinTheta + translatedCenter.y * cosTheta;
+
+        // Translate back
+        this->center.x = rotatedX + origin.x;
+        this->center.y = rotatedY + origin.y;
     }
+
     void Ellipse::scale(const Point &origin, int factor) {
         radius.x *= factor;
         radius.y *= factor;
@@ -62,7 +78,7 @@ namespace svg
         center.y += dir.y; 
     }
     void Circle::rotate(const Point &origin, int degrees) {
-        
+        center = center.rotate(origin, degrees);
     }
     void Circle::scale(const Point &origin, int factor) {
         radius.x *= factor;
@@ -96,15 +112,35 @@ namespace svg
     }
     void polyline::rotate(const Point &origin, int degrees) {
 
+        // Translate each point of the polyline to the origin, rotate, and then translate back
+        float radianAngle = degrees * 3.1415926 / 180.0; // Convert degrees to radians
+        float cosTheta = cos(radianAngle);
+        float sinTheta = sin(radianAngle);
+
+        for (Point &point : points)
+        {
+            // Translate to the origin
+            float translatedX = point.x - origin.x;
+            float translatedY = point.y - origin.y;
+
+            // Perform rotation
+            float rotatedX = translatedX * cosTheta - translatedY * sinTheta;
+            float rotatedY = translatedX * sinTheta + translatedY * cosTheta;
+
+            // Translate back
+            point.x = rotatedX + origin.x;
+            point.y = rotatedY + origin.y;
+        }
     }
 
     //! int the scale operation we get the distance of the point form the origin along the axis by (point- origin)
     //! then we multiply it by the factor
     //! and then sum that to the origin
     void polyline::scale(const Point &origin, int factor) {
+        //! Scale each point of the polyline
         for (Point &point : points){
-            point.x = origin.x + (point.x - origin.x) * factor;
-            point.y = origin.y + (point.y - origin.y) * factor;
+            point.x *= factor; //origin.x + (point.x - origin.x) * factor;
+            point.y *= factor; //origin.y + (point.y - origin.y) * factor;
         }
     }
 
@@ -158,11 +194,31 @@ namespace svg
     }
     void polygon::rotate(const Point &origin, int degrees) {
 
+        // Translate each point of the polygon to the origin, rotate, and then translate back
+
+        float radianAngle = degrees * 3.1415926 / 180.0; // Convert degrees to radians
+        float cosTheta = cos(radianAngle);
+        float sinTheta = sin(radianAngle);
+
+        for (Point &point : points)
+        {
+            // Translate to the origin
+            float translatedX = point.x - origin.x;
+            float translatedY = point.y - origin.y;
+
+            // Perform rotation
+            float rotatedX = translatedX * cosTheta - translatedY * sinTheta;
+            float rotatedY = translatedX * sinTheta + translatedY * cosTheta;
+
+            // Translate back
+            point.x = rotatedX + origin.x;
+            point.y = rotatedY + origin.y;
+        }
     }
     void polygon::scale(const Point &origin, int factor) {
         for(Point &point : points){
-            point.x = origin.x + (point.x - origin.x) * factor;
-            point.y = origin.y + (point.y - origin.y) * factor;
+            point.x *= factor;//origin.x + (point.x - origin.x) * factor;
+            point.y *= factor; //origin.y + (point.y - origin.y) * factor;
         }
     }
 
@@ -183,18 +239,32 @@ namespace svg
     //! we can do this way in the rectangle since it will go over a vector of points
     //! just like in the case of the polygon
     void rect::translate(const Point &dir) {
-        polygon::translate(dir);
+        upper_left_corner.x += dir.x;
+        upper_left_corner.y += dir.y;
+        for(auto &point : points){
+            point.x += dir.x;
+            point.y += dir.y;
+        }
     }
     void rect::rotate(const Point &origin, int degrees) {
-
+        float radians = degrees * 3.1415926 / 180;
+        for (auto &point : points){
+            float x_new = origin.x + (point.x - origin.x) * cos(radians) - (point.y - origin.y) * sin(radians);
+            float y_new = origin.y + (point.x - origin.x) * sin(radians) + (point.y - origin.y) * cos(radians);
+            point.x = x_new;
+            point.y = y_new;  
+        }
     }
     void rect::scale(const Point &origin, int factor) {
-        polygon::scale(origin, factor);
+        for(auto &point : points){
+            point.x = upper_left_corner.x + (point.x - upper_left_corner.x) * factor;
+            point.y = upper_left_corner.y + (point.y - upper_left_corner.y) * factor;
+        }
     }
 
 
     Group::Group(const std::vector<SVGElement*> &elements, const std::string &id)
-        : elements(elements), id(id)
+        : elements(elements), id_(id)
     {
     };
 
@@ -205,17 +275,20 @@ namespace svg
     }
 
     void Group::translate(const Point &dir) {
+        //!Translate each element in the group
         for(SVGElement *element: elements){
             element->translate(dir);
         }
     }
 
     void Group::rotate(const Point &origin, int degrees) {
+        //!Rotate each element in the group
         for(SVGElement *element: elements){
             element->rotate(origin, degrees);
         }
     }
     void Group::scale(const Point &origin, int factor) {
+        //!Scale each element in the group
         for(SVGElement *element: elements){
             element->scale(origin, factor);
         }
