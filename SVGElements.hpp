@@ -19,11 +19,11 @@ namespace svg
     public:
         SVGElement();
         virtual ~SVGElement();
-        virtual void draw(PNGImage &img) const = 0;
+        virtual void draw(PNGImage &img) const = 0; //!the draw function
         virtual void translate(const Point &dir) = 0; //! the direction it will move
         virtual void rotate(const Point &center, int angle) = 0; //!the center of rotation and the angle of rotation
         virtual void scale(const Point &center, int factor) = 0; //! sx and sy represent the scale factors in both x and y
-        const std::string &getId() const {return id_;}
+        const std::string &getId() const {return id_;} //! get the id
         virtual std::string getType() const = 0;
 
     protected:
@@ -86,7 +86,7 @@ namespace svg
             std::vector<Point> points;//!we declare the vector of points of type Point
     };
 
-    class line : public polyline{
+    class line : public SVGElement{
         public:
             line(const Point &start, const Point &end, const Color &fill);
             void draw(PNGImage &img) const override;//!we again override the draw function
@@ -100,7 +100,7 @@ namespace svg
             Color fill; //!the stroke
     };
 
-    //! polygon class a subclass of SVGElement
+    //! polygon class is a subclass of SVGElement
     //! the polygon subclass will have a sequence of points : vector<Points> points which are separated by a comma
     //! and will also have a stroke color, the fill parameter
     class polygon : public SVGElement{
@@ -121,7 +121,7 @@ namespace svg
     //! for example the upper right point is the x coordinate of the upper left + the width of the rectangle
     //! and the y coordinate will remain the same since both points have the same height
     //! therefore the vector of points will consist of the upper left point and all the points we can get by summing the
-    //! width and height to where it is needed
+    //! width and height to where it is needed, this will be implemented in the cpp file
 
     class rect : public polygon{
         public:
