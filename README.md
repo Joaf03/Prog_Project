@@ -1,8 +1,8 @@
 # Prog_Project
 
-João Afonso Santos-up202108805
-Gustavo Lourenço-up202306578
-Tomás Pereira-up202305651
+João Afonso Santos-up202108805<br>
+Gustavo Lourenço-up202306578<br>
+Tomás Pereira-up202305651<br>
 
 <h1>Overview</h1> <br>
 This project implements a comprehensive SVG to PNG conversion tool. The primary aim was to read SVG files, parse various SVG elements, apply transformations, and then render these elements into PNG images. The key transformations supported include translation, rotation, and scaling of the SVG elements, enabling manipulation and accurate rendering of the graphical data.
