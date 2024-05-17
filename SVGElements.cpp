@@ -9,8 +9,6 @@ namespace svg
     SVGElement::SVGElement()  {} //!the constructor
     SVGElement::~SVGElement() {} //! the destructor
 
-
-
     //! now we implement the translate, rotate and scale functions
     //! in all classes
 
@@ -23,9 +21,8 @@ namespace svg
     Ellipse::Ellipse(const Color &fill,
                      const Point &center,
                      const Point &radius)
-        : fill(fill), center(center), radius(radius)
-    {
-    }
+        : fill(fill), center(center), radius(radius){};
+
     void Ellipse::draw(PNGImage &img) const
     {
         img.draw_ellipse(center, radius, fill);
@@ -33,18 +30,14 @@ namespace svg
 
     void Ellipse::translate(const Point &dir) {
         center = center.translate(dir);
-        /*
-        center.x += dir.x;
-        center.y += dir.y; //the center will move
-        */
     }
     void Ellipse::rotate(const Point &origin, int degrees) {
         center = center.rotate(origin,degrees);
     }
 
     void Ellipse::scale(const Point &origin, int factor) {
-        center = center.scale(origin,factor);
-        radius = radius.scale(origin,factor);
+        center = center.scale(origin, factor);
+        radius = {radius.x * factor, radius.y * factor};
     }
     
     //! Circle implementation
@@ -54,27 +47,24 @@ namespace svg
     //! and will have : Ellipse(fill,center,radius), since these attributes come from the Ellipse
     //! the same comments about the translate, rotate and scale functions
     //! will apply here, since the circle is a special case of the ellipse
+
     Circle::Circle(const Color &fill,
                   const Point &center,
                   const Point &radius)
                   : Ellipse(fill,center,radius){};
     void Circle::draw(PNGImage &img) const{
-        img.draw_ellipse(center,radius,fill);//! and the draw function
+        img.draw_ellipse(center,radius,fill); //! and the draw function
     }
 
     void Circle::translate(const Point &dir) {
         center = center.translate(dir);
-        /*
-        center.x += dir.x;
-        center.y += dir.y; 
-        */
     }
     void Circle::rotate(const Point &origin, int degrees) {
         center = center.rotate(origin, degrees);
     }
     void Circle::scale(const Point &origin, int factor) {
-        center = center.scale(origin,factor);
-        radius = radius.scale(origin,factor);
+        center = center.scale(origin, factor);
+        radius = {radius.x * factor, radius.y * factor};
     }
 
     //! Polyline implementation
@@ -91,8 +81,10 @@ namespace svg
                        :fill(fill), points(points){};
 
     void polyline::draw(PNGImage &img) const{
-        for (size_t i = 0; i < points.size() - 1; i++ ){
-            img.draw_line(points[i],points[i+1],fill); //! the function draw to each point
+        for (size_t i = 0; i < points.size() - 1; i++) {
+            Point start = points[i];
+            Point end = points[i + 1];
+            img.draw_line(start, end, fill);
         }
     }
 
@@ -102,8 +94,6 @@ namespace svg
         }
     }
     void polyline::rotate(const Point &origin, int degrees) {
-
-        
         for (Point &point : points)
         {
             point = point.rotate(origin,degrees);
@@ -121,45 +111,29 @@ namespace svg
     //! line implementation
     //! the line will contain a start and end point
     //! we can create a temporary vector of points to store the start and end points
-    //! after that we make the draw fucntion, which will have as arguments the start and end point and the fill
+    //! after that we make the draw function, which will have as arguments the start and end point and the fill
 
     line::line(const Point &start,
                const Point &end,
                const Color &fill)
-               :polyline(fill,std::vector<Point> {start,end}), start(start), end(end) {};
-
+               :start(start), end(end), fill(fill)
+    {
+    }
     void line::draw(PNGImage &img) const{
         img.draw_line(start,end,fill);
     }
     
     void line::translate(const Point &dir) {
-        for(Point& point : points){
-            point = point.translate(dir);
-        }
-        /*
-        start.x += dir.x;
-        start.y += dir.y;
-        end.x += dir.x;
-        end.y += dir.y;
-        */
+        start = start.translate(dir);
+        end = end.translate(dir);
     }
     void line::rotate(const Point &origin, int degrees) {
-        for(Point &point : points){
-            point = point.rotate(origin,degrees);
-        }
+        start = start.rotate(origin,degrees);
+        end = end.rotate(origin,degrees);
     }
     void line::scale(const Point &origin, int factor) {
-
-
-        for(Point &point : points){
-            point = point.scale(origin,factor);
-        }
-        /*
-        start.x = origin.x + (start.x - origin.x) * factor;
-        start.y = origin.y + (start.y - origin.y) * factor;
-        end.x = origin.x + (end.x - origin.x) * factor;
-        end.y = origin.y + (end.y - origin.y) * factor;
-        */
+        start =start.scale(origin,factor);
+        end = end.scale(origin,factor);
     }
 
     //! polygon
@@ -180,9 +154,7 @@ namespace svg
         }
     }
     void polygon::rotate(const Point &origin, int degrees) {
-
-        for (Point &point : points)
-        {
+        for (Point &point : points){
             point = point.rotate(origin,degrees);
         }
     }
@@ -193,15 +165,16 @@ namespace svg
     }
 
     //!rectangle implementation
+    //!we subtract 1 because, without it the rectangle will have 1 more pixel
 
     rect::rect(const Color &fill, const Point &upper_left_corner, 
                const int &width, 
                const int &height)
                :polygon(fill, std::vector<Point>{
                 upper_left_corner,
-                {upper_left_corner.x + width, upper_left_corner.y}, 
-                {upper_left_corner.x + width, upper_left_corner.y + height}, 
-                {upper_left_corner.x, upper_left_corner.y + height}
+                {upper_left_corner.x + width - 1, upper_left_corner.y}, 
+                {upper_left_corner.x + width - 1, upper_left_corner.y + height - 1}, 
+                {upper_left_corner.x, upper_left_corner.y + height - 1}
                }) {};
     void rect::draw(PNGImage &img) const{
         img.draw_polygon(points,fill);
@@ -209,18 +182,17 @@ namespace svg
     //! we can do this way in the rectangle since it will go over a vector of points
     //! just like in the case of the polygon
     void rect::translate(const Point &dir) {
-        for(auto &point : points){
+        for(Point &point : points){
             point = point.translate(dir);
         }
     }
     void rect::rotate(const Point &origin, int degrees) {
-
-        for (auto &point : points){
+        for (Point &point : points){
             point = point.rotate(origin,degrees);  
         }
     }
     void rect::scale(const Point &origin, int factor) {
-        for(auto &point : points){
+        for(Point &point : points){
             point = point.scale(origin,factor);
         }
     }
@@ -250,11 +222,11 @@ namespace svg
             element->rotate(origin, degrees);
         }
     }
+
     void Group::scale(const Point &origin, int factor) {
         //!Scale each element in the group
         for(SVGElement *element: elements){
             element->scale(origin, factor);
         }
     }
-    
 }
